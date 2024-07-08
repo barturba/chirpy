@@ -41,10 +41,6 @@ func (cfg *apiConfig)handlerMetrics(w http.ResponseWriter, r *http.Request) {
 	</html>`, cfg.fileserverHits)))
 }
 
-func (cfg *apiConfig)handlerReset(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-	cfg.fileserverHits = 0
-}
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

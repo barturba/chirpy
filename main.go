@@ -13,9 +13,14 @@ type apiConfig struct {
 }
 
 func main() {
+	db, err := database.NewDB("database.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	apiCfg := apiConfig{
 		fileserverHits: 0,
+		DB:             db,
 	}
 
 	mux := http.NewServeMux()

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func handlerPost(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerPost(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
 	}
@@ -15,7 +15,6 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		// an error will be thrown if the JSON is invalid or has the wrong types
 		// any missing fields will simply have their values in the struct set to their zero value
 		log.Printf("Error decoding parameters: %s", err)
 		w.WriteHeader(500)

@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"internal/database"
 )
 
 func handlerPost(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +25,8 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
     }
 
 	bodyLen := len(params.Body)
+	var myDB database.DB 
+	myDB.Path = "123"
 
 	if bodyLen > 140 {
 		respondWithError(w, 400, "Chirp is too long")

@@ -11,7 +11,7 @@ type Chirp struct {
 	Body string `json:"body"`
 }
 
-func (cfg *apiConfig) handlerPost(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
 	}

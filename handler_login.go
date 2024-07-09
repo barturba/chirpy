@@ -24,7 +24,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	foundUser, err := cfg.getUserWithEmail(r, params.Email)
+	foundUser, err := cfg.getUserWithEmail(params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Couldn't find user")
 		return
@@ -64,7 +64,7 @@ func decodeParameters(r *http.Request) (parameters, error) {
 	return params, nil
 }
 
-func (cfg *apiConfig) getUserWithEmail(r *http.Request, email string) (database.User, error) {
+func (cfg *apiConfig) getUserWithEmail(email string) (database.User, error) {
 	users, err := cfg.DB.GetUsers()
 	if err != nil {
 		return database.User{}, err

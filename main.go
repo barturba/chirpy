@@ -6,14 +6,24 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type apiConfig struct {
 	fileserverHits int
 	DB             *database.DB
+	JWTSecret      string
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+
 	dbg := flag.Bool("debug", false, "Enable debug mode")
 	flag.Parse()
 	if *dbg {
@@ -31,6 +41,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileserverHits: 0,
 		DB:             db,
+		JWTSecret:      jwtSecret,
 	}
 
 	mux := http.NewServeMux()
@@ -42,6 +53,7 @@ func main() {
 	mux.HandleFunc("GET /api/chirps", apiCfg.handlerChirpsGet)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.handlerChirpsGetByID)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
+	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
 
 	srv := &http.Server{
 		Addr:    ":8080",

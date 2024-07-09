@@ -32,8 +32,7 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, User{
-		ID:       user.ID,
-		Email:    user.Email,
-		Password: user.Password,
+		ID:    user.ID,
+		Email: user.Email,
 	})
 }

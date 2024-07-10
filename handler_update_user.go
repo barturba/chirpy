@@ -31,7 +31,7 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	})
 	userID := 0
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Internal server error")
+		respondWithError(w, http.StatusUnauthorized, "Bad token")
 		return
 	} else if claims, ok := token.Claims.(*MyCustomClaims); ok {
 		userID, err = strconv.Atoi(claims.RegisteredClaims.Subject)
@@ -51,7 +51,7 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	createdUser, err := cfg.DB.UpdateUser(userID, params.Email, params.Password)
+	updatedUser, err := cfg.DB.UpdateUser(userID, params.Email, params.Password)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create user")
@@ -62,9 +62,9 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		Email string `json:"email"`
 	}
 
-	respondWithJSON(w, http.StatusCreated, responseParams{
-		ID:    createdUser.ID,
-		Email: createdUser.Email,
+	respondWithJSON(w, http.StatusOK, responseParams{
+		ID:    updatedUser.ID,
+		Email: updatedUser.Email,
 	})
 
 }

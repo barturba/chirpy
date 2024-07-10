@@ -23,6 +23,11 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
+	if params.ExpiresInSeconds == 0 {
+		params.ExpiresInSeconds = 86400
+	} else if params.ExpiresInSeconds > 86400 {
+		params.ExpiresInSeconds = 86400
+	}
 
 	foundUser, err := cfg.getUserWithEmail(params.Email)
 	if err != nil {

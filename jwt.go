@@ -13,14 +13,20 @@ func (cfg *apiConfig) createJWT(expiresInSeconds int, userID int) (string, error
 		expirationTime = expiresInSeconds
 	}
 	mySigningKey := []byte(cfg.JWTSecret)
-	claims :=
+	type MyCustomClaims struct {
+		Foo string `json:"foo"`
+		jwt.RegisteredClaims
+	}
+	claims := MyCustomClaims{
+		"bar",
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expirationTime))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "chirpy",
 			Subject:   fmt.Sprintf("%d", userID),
-		}
+		},
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(mySigningKey)

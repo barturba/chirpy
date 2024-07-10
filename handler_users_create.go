@@ -28,7 +28,7 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 
 	user, err := cfg.DB.CreateUser(params.Email, params.Password)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create user")
 	}
 
 	respondWithJSON(w, http.StatusCreated, User{

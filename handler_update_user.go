@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
+	"internal/database"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -15,32 +19,71 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	foundUser, err := cfg.getUserWithEmail(params.Email)
+	authorization := r.Header.Get("Authorization")
+	authorization = strings.TrimPrefix(authorization, "Bearer ")
+	type MyCustomClaims struct {
+		Foo string `json:"foo"`
+		jwt.RegisteredClaims
+	}
+
+	token, err := jwt.ParseWithClaims(authorization, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(cfg.JWTSecret), nil
+	})
+	userID := 0
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	} else if claims, ok := token.Claims.(*MyCustomClaims); ok {
+		userID, err = strconv.Atoi(claims.RegisteredClaims.Subject)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Internal server error")
+			return
+
+		}
+	} else {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	_, err = cfg.getUserWithID(userID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Couldn't find user")
 		return
 	}
 
-	jwt, err := cfg.createJWT(params.ExpiresInSeconds, foundUser.ID)
+	createdUser, err := cfg.DB.UpdateUser(userID, params.Email, params.Password)
+
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Internal server error")
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create user")
 	}
 
 	type responseParams struct {
 		ID    int    `json:"id"`
 		Email string `json:"email"`
-		Token string `json:"token"`
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(params.Password))
+	respondWithJSON(w, http.StatusCreated, responseParams{
+		ID:    createdUser.ID,
+		Email: createdUser.Email,
+	})
+
+}
+
+func (cfg *apiConfig) getUserWithID(id int) (database.User, error) {
+	users, err := cfg.DB.GetUsers()
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
-		return
-	} else {
-		respondWithJSON(w, http.StatusOK, responseParams{
-			ID:    foundUser.ID,
-			Email: foundUser.Email,
-			Token: jwt})
-		return
+		return database.User{}, err
 	}
+	var found bool
+	var foundUser database.User
+	for _, user := range users {
+		if user.ID == id {
+			found = true
+			foundUser = user
+		}
+	}
+	if !found {
+		return database.User{}, errors.New("User not found")
+	}
+	return foundUser, nil
 }

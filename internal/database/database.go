@@ -63,6 +63,29 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	return user, nil
 }
 
+func (db *DB) UpdateUser(id int, email, password string) (User, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+	passBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return User{}, err
+	}
+	user := User{
+		ID:       id,
+		Email:    email,
+		Password: string(passBytes),
+	}
+	dbStructure.Users[id] = user
+
+	err = db.writeDB(dbStructure)
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
 func (db *DB) CreateChirp(body string) (Chirp, error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
